@@ -25,7 +25,16 @@ This project is a basic ecommerce application with laravel V10, ReactJs V18 and 
 ## How to install
 
 -   Git clone this repo
--
+-   Run your docker composer: docker compose up -d
+-   Run to install laravel php modules: composer install
+-   Now you can kill your container: docker compose down
+-   Then use sail normally: ./vendor/bin/sail up
+-   Run migration using the this command: docker exec -it [YOUR CONTINER NAME] php artisan migrate
+-   docker exec -it [YOUR CONTINER NAME] php artisan db:seed
+-   Install node module: npm install
+-   Start local node dev server: npm run dev
+
+If you have completed the above succesfuly your project should have start running on http://localhost
 
 ## License
 
@@ -33,5 +42,7 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
 
 ## Some useful commands
 
-./vendor/bin/sail up
-docker exec -it lifepage_laravel.test_1 php artisan db:seed
+-   docker compose up -d
+-   ./vendor/bin/sail up
+-   docker exec -it lifepage_laravel.test_1 php artisan migrate
+-   docker exec -it lifepage_laravel.test_1 php artisan db:seed
