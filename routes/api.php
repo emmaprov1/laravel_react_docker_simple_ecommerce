@@ -32,3 +32,4 @@ Route::get('/customer/orders/{user_id}', [App\Http\Controllers\Api\OrderControll
 
 Route::get('/customer', [App\Http\Controllers\Api\CustomerController::class, 'index'])->name('customer');
 Route::delete('/customer/{user_id}', [App\Http\Controllers\Api\CustomerController::class, 'destroy'])->name('customer_destroy');
+Route::post('/customer/create/', [App\Http\Controllers\Api\CustomerController::class, 'store'])->name('customer_store');

@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\User;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
@@ -32,12 +35,37 @@ class CustomerController extends Controller
         //
     }
 
+
+
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+
+        if ($validator->fails()) {
+            return response()->json(['status' => 'error', 'message' => $validator->errors()->all()])->setStatusCode(401);
+        }
+
+        $customer = new User();
+        try {
+            $customer->name = $request->name;
+            $customer->email = $request->email;
+            $customer->email_verified_at = now();
+            $customer->password =  Hash::make($request->password);
+            $customer->remember_token =  Str::random(10);
+            $customer->save();
+
+            return response()->json(['status' => 'success', 'message' => "Customer created succefully"])->setStatusCode(200);
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()])->setStatusCode(401);
+        }
     }
 
     /**

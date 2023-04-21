@@ -1,12 +1,22 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './Customers.scss'
 import toast, { Renderable, Toast, Toaster, ValueFunction } from 'react-hot-toast'
 import { customerService } from '../../service/customerService'
+import { useForm } from 'react-hook-form'
+
+export type registerFormProps = {
+    email: string;
+    name: string;
+    password: string;
+}
 
 const Customers = () => {
   const [data, setData] = useState([])
   const [request, setRequest] = useState(false)
+  const [requestReg, setRequestReg] = useState(false)
+
+  const closeModalBtn = useRef<any>()
 
   const getUser = async () => {
     setRequest(true)
@@ -32,6 +42,8 @@ const Customers = () => {
       toast.dismiss(loader)
       toast.success('User deleted', { duration: 20000, className: 'bg-white text-dark', position: 'top-right' })
 
+      closeModalBtn.current.click()
+
       setTimeout(() => {
         getUser()
       }, 300)
@@ -42,12 +54,40 @@ const Customers = () => {
     })
   }
 
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<registerFormProps>()
+
+  const submit = async (data: registerFormProps) => {
+    setRequestReg(true)
+    await customerService.create(data).then((res: any) => {
+      toast.success('Customer Created', { duration: 20000, className: 'bg-white text-dark', position: 'top-right' })
+
+      setRequestReg(false)
+      reset()
+      setTimeout(() => {
+        getUser()
+      }, 300)
+    }, (error: { response: any; message: Renderable | ValueFunction<Renderable, Toast>; }) => {
+      console.log('error', error.response)
+      setRequestReg(false)
+      toast.error(error.response.data.message, { duration: 20000, className: 'bg-white text-dark', position: 'top-right' })
+    })
+  }
+
   return (
         <div className='customers'>
             <div className="container">
-                <h2>
-                    Customer
-                </h2>
+                <div className="row">
+                    <div className="col-md-6">
+                        <h2>
+                            Customer
+                        </h2>
+                    </div>
+                    <div className="col-md-6 text-end">
+                        <button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+                             Create customer
+                        </button>
+                    </div>
+                </div>
                 <div className="card border-0 cart-bottom">
                     <div className="card-body">
                         <div className="table responsive mt-5">
@@ -88,6 +128,40 @@ const Customers = () => {
              {request === true && <span className='spinner-border spinner-border-sm'></span>}
 
             </div>
+
+                <div className="modal fade" id="exampleModal" tabIndex={-1} aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                    <div className="modal-header">
+                        <h5 className="modal-title" id="exampleModalLabel">Create new customer</h5>
+                        <button type="button" className="btn-close" ref={closeModalBtn} data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div className="modal-body">
+                        <form onSubmit={handleSubmit((data) => submit(data))}>
+                            <div className='form-input'>
+                                <label htmlFor="name">Name</label>
+                                <input type="text" id="name" className="form-control" {...register('name', { required: 'field is required' })}/>
+                                {errors.name && <div className='text-danger'>{errors.name.message}</div>}
+                            </div>
+                            <div className='form-input mt-3'>
+                                <label htmlFor="email">Email</label>
+                                <input type="email" id="email" className="form-control" {...register('email', { required: 'field is required' })}/>
+                                {errors.email && <div className='text-danger'>{errors.email.message}</div>}
+                            </div>
+                            <div className='form-input mt-3'>
+                                <label htmlFor="password">Password</label>
+                                <input type="password" id="password" className="form-control" {...register('password', { required: 'field is required' })}/>
+                                {errors.password && <div className='text-danger'>{errors.password.message}</div>}
+                            </div>
+                            <div className='form-input mt-3'>
+                                {requestReg === false && <button type="submit" className="btn btn-primary">Create</button>}
+                                {requestReg === true && <button type="submit" className="btn btn-primary"><span className='spinner-border spinner-border-sm'></span> Please wait...</button>}
+                             </div>
+                        </form>
+                    </div>
+                    </div>
+                </div>
+                </div>
             <Toaster></Toaster>
         </div>
   )
